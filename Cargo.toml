@@ -1,0 +1,24 @@
+[package]
+name = "concert_with_friends"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.6.12"
+config = "0.13.3"
+hyper = "0.14.25"
+include_dir = "0.7.3"
+lazy_static = "1.4.0"
+mime_guess = "2.0.4"
+minijinja = { version = "0.30.7", features = ["builtins", "source"] }
+minijinja-autoreload = "0.30.7"
+serde = "1.0.158"
+serde_json = "1.0.94"
+tokio = "1.26.0"
+tower = "0.4.13"
+tower-http = { version = "0.4.0", features = ["cors", "trace"] }
+tower_governor = "0.0.4"
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
