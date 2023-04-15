@@ -1,12 +1,12 @@
+mod settings;
+mod mvc;
+mod ticketmaster;
+
 use axum::{
-    body::{self, Empty, Full},
     error_handling::HandleErrorLayer,
-    extract::Path,
-    response::{Html, IntoResponse, Response},
     routing::get,
     BoxError, Extension, Router,
 };
-use hyper::StatusCode;
 use minijinja::{Environment, Source};
 use minijinja_autoreload::AutoReloader;
 use std::{net::SocketAddr, sync::Arc};
@@ -16,8 +16,8 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::{event, Level};
 
-mod settings;
 use settings::Settings;
+use mvc::controllers::{errors::page_not_found, basics::{index, read_env, static_file}};
 
 #[tokio::main]
 async fn main() {
@@ -80,52 +80,4 @@ async fn main() {
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();
-}
-
-async fn index(Extension(template_loader): Extension<Arc<AutoReloader>>) -> Html<String> {
-    let template = template_loader
-        .acquire_env()
-        .unwrap()
-        .get_template("index.j2")
-        .unwrap()
-        .render("")
-        .unwrap();
-    Html(template)
-}
-
-async fn page_not_found(
-    Extension(template_loader): Extension<Arc<AutoReloader>>,
-) -> impl IntoResponse {
-    let template = template_loader
-        .acquire_env()
-        .unwrap()
-        .get_template("page_not_found.j2")
-        .unwrap()
-        .render("")
-        .unwrap();
-    (StatusCode::NOT_FOUND, Html(template))
-}
-
-async fn static_file(Path(path): Path<String>) -> impl IntoResponse {
-    let path = format!("static/{}", path.trim_start_matches('/'));
-    let mime_type = mime_guess::from_path(&path).first_or_text_plain();
-    let file = std::fs::read_to_string(path);
-    match file {
-        Ok(contents) => Response::builder()
-            .status(StatusCode::OK)
-            .header(
-                hyper::header::CONTENT_TYPE,
-                hyper::header::HeaderValue::from_str(mime_type.as_ref()).unwrap(),
-            )
-            .body(body::boxed(Full::from(contents)))
-            .unwrap(),
-        Err(_) => Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(body::boxed(Empty::new()))
-            .unwrap(),
-    }
-}
-
-async fn read_env(Extension(settings): Extension<Arc<Settings>>) -> String {
-    settings.env.to_string()
 }
