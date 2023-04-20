@@ -1,12 +1,7 @@
-mod settings;
 mod mvc;
-mod ticketmaster;
+mod settings;
 
-use axum::{
-    error_handling::HandleErrorLayer,
-    routing::get,
-    BoxError, Extension, Router,
-};
+use axum::{error_handling::HandleErrorLayer, routing::get, BoxError, Extension, Router};
 use minijinja::{Environment, Source};
 use minijinja_autoreload::AutoReloader;
 use std::{net::SocketAddr, sync::Arc};
@@ -16,8 +11,11 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::{event, Level};
 
+use mvc::controllers::{
+    basics::{index, read_env, static_file},
+    errors::page_not_found,
+};
 use settings::Settings;
-use mvc::controllers::{errors::page_not_found, basics::{index, read_env, static_file}};
 
 #[tokio::main]
 async fn main() {
